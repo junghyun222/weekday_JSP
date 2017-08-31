@@ -7,20 +7,18 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <!-- modify에서 잘라서 가져옴 -->
 <%
+String rootPath=request.getContextPath();
+//context경로 바뀌어도 절대경로 rootPath 로 설정해주면 일일이 바꿔주지 않아도됨, 
+//modify파일의 스크립트 구문script src="/js/jquery-3.2.1.min.js"></script> 잘라서 가져옴
 if(session.getAttribute("user")==null){      //로그인에 실패한경우
 	RequestDispatcher dis=request.getRequestDispatcher("/login.jsp"); 
 	dis.forward(request,response); //sendRedirect대신 url주소를 변동시키지 않으면서 화면을 이동시킴
 //	response.sendRedirect("/login.jsp"); 이것대신 위에두줄
 }
-
-%>
-<!-- context경로 바뀌어도 절대경로 rootPath 로 설정해주면 일일이 바꿔주지 않아도됨, modify파일의 스크립트 구문script src="/js/jquery-3.2.1.min.js"></script> 잘라서 가져옴 -->
-<%
-String rootPath=request.getContextPath();
 %>
 <script src="<%=rootPath %>/js/jquery-3.2.1.min.js"></script> 
 <script>
-var AjaxUtil = function(params) {
+var AjaxUtil = function(params,p_url) {
 	this.params = params;
  
 	getHttpXmlObj = function() {
@@ -33,7 +31,8 @@ var AjaxUtil = function(params) {
 	}
 	this.xhr = getHttpXmlObj();
 	var method = "post";
-	var url = "test.user";
+	var url=p_url?p_url:"test.user";
+//	var url = "test.user";
 	var aSync = true;
 	this.xhr.callfunc = null;
 	this.xhr.onreadystatechange = function() {
@@ -59,20 +58,5 @@ var AjaxUtil = function(params) {
 		this.xhr.send(params);
 	}
 }
-/* function setEvent() {
-	$("input[type='button']").click(function() {
-		var url = this.getAttribute("data-url");
-		if(url.split(".")[1]=="user"){
-			var param = "?command=list&name="+$("#name").val();
-			var au = new AjaxUtil(param);
-			au.send();
-		}
-	});
-} */
 
-$(document).ready(function() {
-	var param = "?command=list";
-	var au = new AjaxUtil(param);
-	au.send();
-})
 </script>

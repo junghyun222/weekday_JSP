@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserService {
+	
 	Map<String, String> getUserLogin(String id, String pwd);
 	
 	Map<String, String> selectUser(String user_no);
@@ -16,5 +17,5 @@ public interface UserService {
 	
 	List<Map<String,String>> getUserList(Map<String, String> hm);
 
-	List<Map<String, String>> selectUserList(Map<String, String> hm);
+	
 }

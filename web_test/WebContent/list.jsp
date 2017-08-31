@@ -67,11 +67,18 @@
 		var au = new AjaxUtil(param);
 		au.send();
 	})
+	
+	$(document).ready(function(){
+		$("#btnHome").click(function(){
+			location.href="/main.jsp";
+		})
+})
 </script>
 </head>
 <body>
 	<div id="result_div"></div>
 	이름 : <input type="text" name="name" id="name">
 	<input type="button" value="검색" data-url="search.user">
+	<input type="buttton" value="홈" id="btnHome">
 </body>
 </html>

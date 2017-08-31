@@ -3,7 +3,6 @@ package servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ import javax.servlet.http.HttpSession;
 import com.google.gson.Gson;
 
 import service.UserService;
-import service.implement.UserServiceImpl;
+import service.UserServiceImpl;
 
 public class UserServlet extends CommonServlet {
 	/**
@@ -36,16 +35,17 @@ public class UserServlet extends CommonServlet {
 				//Gson 사용
 				Gson g= new Gson();
 				HashMap<String, String> hm = g.fromJson(str, HashMap.class);
-				System.out.println(hm);	
 				String result = "회원가입에 실패하셨습니다.";
 				int rCnt = us.insertUser(hm);
 				if(rCnt==1) {
-					result ="<script>";
-					result +="alert('회원가입에 성공하셨습니다. 로그인해주시기 바랍니다.');";
-					result +="location.href='/login.jsp';";
-					result +="</script>";
+					result = "회원가입성공";
 				}
-				doProcess(resp, result);
+				HashMap rehm = new HashMap();
+				rehm.put("msg", result);
+				rehm.put("url", "/login.jsp");
+				
+				str = g.toJson(rehm);
+				doProcess(resp, str);
 			}else if(command.equals("login")) {
 				String id = request.getParameter("id");
 				String pwd = request.getParameter("pwd");
@@ -62,58 +62,84 @@ public class UserServlet extends CommonServlet {
 			}else if(command.equals("logout")) {
 				HttpSession session = request.getSession();
 				session.invalidate();
-				resp.sendRedirect("/user/login.jsp");
-			}else if(command.equals("delete")) {
-				String userNo = request.getParameter("userNo");
-				Map<String, String> hm = new HashMap<String, String>();
-				hm.put("user_no", userNo);
-				int rCnt = us.deleteUser(hm);
-				String result ="회원탈퇴에 실패하셨습니다.";
-				if(rCnt==1) {
-					result = "회원탈퇴에 성공하셨습니다.";
-					result += "<script>";
-					result += "alert('회원탈퇴에 성공하셨습니다.');";
-					result += "</script>";
-					
-					/*result = "회원가입에 성공";
-					result +="다시로그인해";*/
-				}
-				doProcess(resp, result);
-			}else if(command.equals("update")) {
+				resp.sendRedirect("/login.jsp");
+			}else if(command.equals("modify")) {
 				String id = request.getParameter("id");
 				String pwd = request.getParameter("pwd");
 				String name = request.getParameter("name");
-				String[] hobbies = request.getParameterValues("hobby");
-				String hobby ="";
+				String user_no = request.getParameter("user_no");
+				String[]  hobbies = request.getParameterValues("hobby");
+				String hobby="";
 				for(String h : hobbies) {
-					hobby += h + ",";
+					hobby += h+",";
 				}
 				hobby = hobby.substring(0, hobby.length()-1);
-				String userNo = request.getParameter("userNo");
+				
 				Map<String, String> hm = new HashMap<String, String>();
 				hm.put("id", id);
 				hm.put("pwd", pwd);
 				hm.put("name", name);
 				hm.put("hobby", hobby);
-				hm.put("user_no", userNo);
-				int rCnt = us.updateUser(hm);
-				String result = "회원 정보 수정이 실패했습니다. 다시 해보세요";
+				hm.put("user_no", user_no);
+				HttpSession session = request.getSession(); //세션받기
+				String result = "회원정보 수정에 실패하셨습니다.";
+			/*	Map<String, String> user = (Map)session.getAttribute("user");
+				hm.put("user_no", user.get("user_no"));*/
+				int rCnt = us.updateUser(hm);				
 				if(rCnt==1) {
-					result = "회원 정보 수정이 성공했습니다.";
+					Map<String,String> user =(Map<String,String>)session.getAttribute("user");
+					if(user.get("admin").equals("1")) {
+						result ="<script>";
+						result +="alert('회원수정에 성공하셨습니다. );";
+						result +="location.href='/list.jsp';";
+						result +="</script>";
+					}else {
+						session.invalidate();
+						result ="<script>";
+						result +="alert('회원수정에 성공하셨습니다. 다시 로그인해주시기 바랍니다.');";
+						result +="location.href='/login.jsp';";
+						result +="</script>";
+					}
+				}
+				
+				doProcess(resp, result);
+			}else if(command.equals("delete")) {
+				String userNo = request.getParameter("userNo");
+				Map<String, String> hm = new HashMap<String, String>();
+				String result ="회원탈퇴에 실패하셨습니다.";
+				hm.put("userNo", userNo);
+				int rCnt = us.deleteUser(hm);
+				if(rCnt==1) {
+					HttpSession session = request.getSession();
+					Map<String, String> user = (Map<String, String>)session.getAttribute("user");
+					if(user.get("admin").equals("1")) {
+						result += "<script>";
+						result += "alert('회원탈퇴에 성공하셨습니다.');";
+						result += "location.href='/list.jsp';";
+						result += "</script>";
+					}
+				}else{
+					result += "<script>";
+					result += "alert('회원탈퇴에 성공하셨습니다.다시로긴');";
+					result += "location.href='/login.jsp';";
+					result += "</script>";
 				}
 				doProcess(resp, result);
-		
 			}else if(command.equals("list")) {
 				Map<String, String> hm = new HashMap<String, String>();
-				List<Map<String,String>> userList = us.selectUserList(hm);
+				hm.put("name", request.getParameter("name"));
+				List<Map<String,String>> userList = us.getUserList(hm);
 				String result = "<table border='1'>";
 				for(Map<String,String> m : userList) {
 					result += "<tr>";
-					result += "<td>" + m.get("name") +"</td>";
+					result += "<td>" + m.get("userNo") +"</td>";
 					result += "<td>" + m.get("id") +"</td>";
+					result += "<td>" + m.get("name") +"</td>";
 					result += "<td>" + m.get("hobby") +"</td>";
+					result += "<td><input type='button' value='수정' data-num'" + m.get("userNo") +"</td>";
+					result += "<td><input type='button' value='삭제' data-num'" + m.get("userNo") +"</td>";
 					result += "</tr>";
-					result += "<td><input type='button' value='수정' data-num'" + m.get("hobby") +"</td>";
+					
 				}
 				result += "</table>";
 				doProcess(resp, result);
@@ -122,6 +148,7 @@ public class UserServlet extends CommonServlet {
 				Map<String, String> hm = us.selectUser(userNo);
 				Gson g= new Gson(); //자바스크립트가 읽기 편하도록 map을 제이슨으로 변환해줌
 				String result = g.toJson(hm);//화면에 뿌려주기 위해제이슨을 사용
+				doProcess(resp, result);
 			}
 		}
 		

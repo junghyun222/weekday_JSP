@@ -17,7 +17,7 @@ function callback(result){// 서버갔다와선 무조건 얘가 실행됨
 	for(var i=0,max=hobbies.length;i<max;i++){//화면에 뿌려줌
 		$("input[value='"+hobbies[i]+"']").prop("checked",true);//게임, 수면찾아서 체크박스에 체크함
 	}
-	$("#userNo").val)(result.user_no))
+	$("#userNo").val(result.user_no);
 }
 $(document).ready(function() {
 	var param ="?command=view&userNo=<%=userNo%>";

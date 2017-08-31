@@ -11,7 +11,7 @@ public class DBCon {
 	public DBCon() throws ClassNotFoundException, SQLException{
 		String url = "jdbc:mysql://localhost:3306/jsp";
 		String id = "root";
-		String pwd = "tlqdnjs1";
+		String pwd = "0000";
 		Class.forName("org.mariadb.jdbc.Driver");
 		con = DriverManager.getConnection(url, id, pwd);
 	}
